@@ -200,6 +200,25 @@ function Interaction:_sendFollowup(payload, files)
   end
 end
 
+--- Sends an interaction reply with zero message resolving. Added by #Guigui, to be compatible with Components V2.
+--- Same behaviour as `reply`, but the message resolving is skipped.
+--- Try to import discordia-interactions' libs/client/resolver.lua if things break.
+---
+---Returns Message on success, otherwise `nil, err`.
+---If `Interaction.channel` was not available, `true` will be returned instead of Message.
+---@param msg table
+---@return Message|boolean
+function Interaction:replyComponents(msg)
+  -- choose desired method depending on the context
+  local method
+  if self._initialRes or self._deferred then
+    method = self._sendFollowup
+  else
+    method = self._sendMessage
+  end
+  return method(self, msg, nil)
+end
+
 ---Sends an interaction reply. An initial response is sent on the first call,
 ---if an initial response has already been sent a followup message is sent instead.
 ---If the initial response was a deferred response, calling this will edit the deferred message.
