@@ -25,6 +25,7 @@ local classes = class.classes
 local intrType = enums.interactionType
 local messageFlag = assert(enums.messageFlag)
 local resolveMessage = resolver.message
+local resolveFile = resolver.file
 local callbackType = enums.interactionCallbackType
 local channelType = discordia.enums.channelType
 
@@ -207,8 +208,17 @@ end
 ---Returns Message on success, otherwise `nil, err`.
 ---If `Interaction.channel` was not available, `true` will be returned instead of Message.
 ---@param msg table
+---@param filenames table
 ---@return Message|boolean
-function Interaction:replyComponents(msg)
+function Interaction:replyComponents(msg, filenames)
+  -- parse files
+  filenames = filenames or msg.files
+  local filecomponents = {}
+  if filenames then
+    for _,file in ipairs(filenames) do
+      resolveFile(file, filecomponents)
+    end
+  end
   -- choose desired method depending on the context
   local method
   if self._initialRes or self._deferred then
@@ -216,7 +226,7 @@ function Interaction:replyComponents(msg)
   else
     method = self._sendMessage
   end
-  return method(self, msg, nil)
+  return method(self, msg, filecomponents)
 end
 
 ---Sends an interaction reply. An initial response is sent on the first call,
